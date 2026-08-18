@@ -241,7 +241,7 @@
                                         <textarea class="form-control" id="upDesc" rows="2"></textarea>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Select File (Excel, Word, PPTX, XML, PDF)</label>
+                                        <label class="form-label">Select Any File (Excel, Word, PPTX, XML, PDF, Images, Zip, etc.)</label>
                                         <input type="file" class="form-control" id="upFile" required>
                                     </div>
                                     <button type="submit" class="btn btn-primary w-100">Submit Document</button>
@@ -357,7 +357,19 @@
                         <div class="col-md-6 mb-3">
                             <div class="card p-3 shadow-sm">
                                 <h5 class="fw-bold">User Account Maintenance</h5>
-                                <button class="btn btn-success btn-sm mb-2" data-bs-toggle="modal" data-bs-target="#newUserModal"><i class="bi bi-person-plus me-1"></i> Add New User</button>
+                                <button class="btn btn-success btn-sm mb-3" data-bs-toggle="modal" data-bs-target="#newUserModal"><i class="bi bi-person-plus me-1"></i> Add New User</button>
+
+                                <!-- User Password Reset / Maintenance Form -->
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Test User Password Fields (Eye Toggle Support)</label>
+                                    <div class="input-group mb-2">
+                                        <input type="password" class="form-control" id="userPassInput" placeholder="User Password">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('userPassInput', 'eyeIcon1')">
+                                            <i class="bi bi-eye" id="eyeIcon1"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
                                 <div id="adminUserList" class="list-group"></div>
                             </div>
                         </div>
@@ -412,6 +424,20 @@
                 });
         });
     });
+
+    function togglePasswordVisibility(inputId, eyeIconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(eyeIconId);
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.remove("bi-eye");
+            icon.classList.add("bi-eye-slash");
+        } else {
+            input.type = "password";
+            icon.classList.remove("bi-eye-slash");
+            icon.classList.add("bi-eye");
+        }
+    }
 
     function loadDashboardStats() {
         fetch("/api/dashboard/stats")
@@ -518,12 +544,23 @@
         let docId = document.getElementById("ragDocSelect").value;
         if (!docId) { alert("Please select a document!"); return; }
         document.getElementById("ragResultArea").innerHTML = "<em>Analyzing document with AI LLM RAG engine...</em>";
-        setTimeout(() => {
-            document.getElementById("ragResultArea").innerHTML = `<strong>AI LLM RAG Recommendation for ${docId}:</strong><br>
-            - <strong>Compliance Check:</strong> Standard deliverables verified against SDLC phase requirements.<br>
-            - <strong>Semantic Summary:</strong> Document structure aligns with enterprise software architecture policies.<br>
-            - <strong>Action Items:</strong> Proceed with Checker sign-off and trigger deployment pipeline.`;
-        }, 1200);
+
+        const formData = new FormData();
+        formData.append("docId", docId);
+
+        fetch("/api/rag/recommend", { method: "POST", body: formData })
+            .then(r => r.json())
+            .then(data => {
+                if (data.recommendation) {
+                    document.getElementById("ragResultArea").innerHTML = `<strong>AI LLM RAG Recommendation for ${docId}:</strong><br>` +
+                        data.recommendation.replace(/\n/g, '<br>');
+                } else {
+                    document.getElementById("ragResultArea").innerHTML = "Error generating AI recommendation.";
+                }
+            })
+            .catch(e => {
+                document.getElementById("ragResultArea").innerHTML = "Failed to communicate with RAG backend service.";
+            });
     }
 
     function saveToggles() {
