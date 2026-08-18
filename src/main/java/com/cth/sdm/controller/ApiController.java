@@ -5,7 +5,9 @@ import com.cth.sdm.entity.User;
 import com.cth.sdm.repository.DocumentRepository;
 import com.cth.sdm.service.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -109,6 +111,67 @@ public class ApiController {
         return approvalWorkflowService.submitDocument(doc, makerUsername);
     }
 
+    // Template Downloads
+    @GetMapping("/templates/download/excel")
+    public ResponseEntity<Resource> downloadExcelTemplate() {
+        Resource resource = new ClassPathResource("static/templates/standard_template.xlsx");
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=standard_template.xlsx")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(resource);
+    }
+
+    @GetMapping("/templates/download/word")
+    public ResponseEntity<Resource> downloadWordTemplate() {
+        Resource resource = new ClassPathResource("static/templates/standard_template.docx");
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=standard_template.docx")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
+                .body(resource);
+    }
+
+    // Standard Template Upload / Parsing & Save
+    @PostMapping("/documents/template-upload")
+    public Map<String, Object> parseAndSaveTemplateForm(@RequestParam("file") MultipartFile file,
+                                                         @RequestParam(value = "saveDirect", defaultValue = "true") boolean saveDirect) throws Exception {
+        Map<String, String> parsedValues = documentProcessingService.parseStandardTemplateForm(
+                file.getInputStream(), file.getOriginalFilename());
+
+        Document savedDoc = null;
+        if (saveDirect && !parsedValues.isEmpty()) {
+            int phaseNumber = 1;
+            try {
+                if (parsedValues.containsKey("Phase Number")) {
+                    phaseNumber = Integer.parseInt(parsedValues.get("Phase Number"));
+                }
+            } catch (Exception ignored) {}
+
+            String docId = idGenerator.generateNextDocumentId(phaseNumber);
+
+            Document doc = new Document();
+            doc.setDocumentId(docId);
+            doc.setDocumentCode(parsedValues.getOrDefault("Document Code", "DOC-TMPL-001"));
+            doc.setAppCode(parsedValues.getOrDefault("Application Code", "SDM"));
+            doc.setTitle(parsedValues.getOrDefault("Document Title", "Standard Template Submission"));
+            doc.setDescription(parsedValues.getOrDefault("Description", "Uploaded via standard Excel/Word template form."));
+            doc.setFileName(file.getOriginalFilename());
+            doc.setFileType(getFileExtension(file.getOriginalFilename()));
+            doc.setFilePath("template_upload");
+            doc.setVersionNumber(parsedValues.getOrDefault("Version Number", "1.0"));
+            doc.setPhaseNumber(phaseNumber);
+
+            savedDoc = approvalWorkflowService.submitDocument(doc, "maker_template");
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "SUCCESS");
+        response.put("parsedData", parsedValues);
+        if (savedDoc != null) {
+            response.put("savedDocument", savedDoc);
+        }
+        return response;
+    }
+
     // AI LLM RAG Integration Endpoint
     @PostMapping("/rag/recommend")
     public Map<String, Object> getRagRecommendation(@RequestParam("docId") String docId) {
@@ -130,25 +193,12 @@ public class ApiController {
                 return response;
             }
         } catch (Exception e) {
-            // Fallback recommendation if local RAG server is offline
             String fallback = "AI Recommendation for " + doc.getDocumentId() + ": Software deliverable complies with standard SDLC phase checklist requirements.";
             doc.setAiRecommendation(fallback);
             documentRepository.save(doc);
             return Map.of("doc_id", docId, "recommendation", fallback, "citations", List.of("SDLC_Policy_P101"));
         }
         return Map.of("error", "Unable to retrieve RAG recommendation");
-    }
-
-    // Standard Template Upload / Parsing
-    @PostMapping("/documents/template-upload")
-    public Map<String, Object> parseTemplateForm(@RequestParam("file") MultipartFile file) throws Exception {
-        Map<String, String> parsedValues = documentProcessingService.parseStandardTemplateForm(
-                file.getInputStream(), file.getOriginalFilename());
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("status", "SUCCESS");
-        response.put("parsedData", parsedValues);
-        return response;
     }
 
     // Checker Approvals
