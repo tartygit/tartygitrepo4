@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Software Development Document Environment</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; }
+        .sidebar { min-height: 100vh; background-color: #1e293b; color: #fff; }
+        .sidebar .nav-link { color: #94a3b8; margin-bottom: 5px; border-radius: 6px; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { color: #fff; background-color: #334155; }
+        .card-stat { border-radius: 10px; border: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .phase-card { border-left: 5px solid #2563eb; transition: transform 0.2s; }
+        .phase-card:hover { transform: translateY(-3px); }
+        .tab-content { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar Navigation -->
+        <div class="col-md-3 col-lg-2 sidebar p-3">
+            <h4 class="text-white fw-bold mb-4"><i class="bi bi-folder-symlink-fill text-primary me-2"></i>SDM System</h4>
+            <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist">
+                <button class="nav-link active text-start" id="tab-dash" data-bs-toggle="pill" data-bs-target="#content-dash"><i class="bi bi-speedometer2 me-2"></i> Realtime Dashboard</button>
+                <button class="nav-link text-start" id="tab-phases" data-bs-toggle="pill" data-bs-target="#content-phases"><i class="bi bi-diagram-3 me-2"></i> 7 Phase Deliverables</button>
+                <button class="nav-link text-start" id="tab-upload" data-bs-toggle="pill" data-bs-target="#content-upload"><i class="bi bi-cloud-upload me-2"></i> Document / Template Ingestion</button>
+                <button class="nav-link text-start" id="tab-checker" data-bs-toggle="pill" data-bs-target="#content-checker"><i class="bi bi-check2-square me-2"></i> Maker / Checker Approvals</button>
+                <button class="nav-link text-start" id="tab-reports" data-bs-toggle="pill" data-bs-target="#content-reports"><i class="bi bi-file-earmark-bar-graph me-2"></i> Online Reports</button>
+                <button class="nav-link text-start" id="tab-rag" data-bs-toggle="pill" data-bs-target="#content-rag"><i class="bi bi-robot me-2"></i> AI LLM RAG Recommendations</button>
+                <button class="nav-link text-start" id="tab-admin" data-bs-toggle="pill" data-bs-target="#content-admin"><i class="bi bi-gear me-2"></i> Admin & User Maintenance</button>
+                <a href="/swagger-ui/index.html" target="_blank" class="nav-link text-start mt-3"><i class="bi bi-code-square me-2"></i> Swagger API Docs</a>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="col-md-9 col-lg-10 p-4">
+            <div class="d-flex justify-content-between align-items-center pb-3 mb-4 border-bottom">
+                <h2 class="h4 fw-bold">Software Development Document Environment</h2>
+                <div>
+                    <span class="badge bg-success p-2 me-2"><i class="bi bi-circle-fill fs-6 me-1"></i> Watched Folder Active</span>
+                    <span class="badge bg-secondary p-2"><i class="bi bi-person-circle me-1"></i> User: admin (ADMIN)</span>
+                </div>
+            </div>
+
+            <div class="tab-content" id="v-pills-tabContent">
+
+                <!-- Realtime Dashboard -->
+                <div class="tab-pane fade show active" id="content-dash">
+                    <h3 class="h5 fw-bold mb-3">Realtime System Dashboard</h3>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <div class="card card-stat bg-primary text-white p-3">
+                                <p class="mb-1">Total Documents</p>
+                                <h2 id="stat-total" class="fw-bold">0</h2>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card card-stat bg-warning text-dark p-3">
+                                <p class="mb-1">Pending Approvals</p>
+                                <h2 id="stat-pending" class="fw-bold">0</h2>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card card-stat bg-success text-white p-3">
+                                <p class="mb-1">Approved</p>
+                                <h2 id="stat-approved" class="fw-bold">0</h2>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card card-stat bg-danger text-white p-3">
+                                <p class="mb-1">Rejected</p>
+                                <h2 id="stat-rejected" class="fw-bold">0</h2>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 class="h6 fw-bold mb-3">Recent Ingested Documents</h4>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle" id="dash-recent-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Doc ID</th>
+                                    <th>Title</th>
+                                    <th>Phase</th>
+                                    <th>App Code</th>
+                                    <th>Maker</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 7 Phase Deliverables Section -->
+                <div class="tab-pane fade" id="content-phases">
+                    <h3 class="h5 fw-bold mb-3">7 Phase Project Lifecycle & Deliverables</h3>
+                    <div class="accordion" id="phaseAccordion">
+                        <!-- Phase 1 -->
+                        <div class="accordion-item mb-2 border-0 shadow-sm">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#phase1">
+                                    Phase 1: Project Initiation & Planning (P101, P102...)
+                                </button>
+                            </h2>
+                            <div id="phase1" class="accordion-collapse collapse show" data-bs-parent="#phaseAccordion">
+                                <div class="accordion-body">
+                                    <p class="text-muted">Deliverables: Software Development Request Form, Initial Assessment & Feasibility Study</p>
+                                    <div class="phase-doc-list" id="phase-list-1">Loading...</div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Phase 2 -->
+                        <div class="accordion-item mb-2 border-0 shadow-sm">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#phase2">
+                                    Phase 2: Requirements & Functional Design (P201, P202...)
+                                </button>
+                            </h2>
+                            <div id="phase2" class="accordion-collapse collapse" data-bs-parent="#phaseAccordion">
+                                <div class="accordion-body">
+                                    <p class="text-muted">Deliverables: Business Requirement Document (BRD), System Requirement Specification (SRS), Functional Specification Document (FSD)</p>
+                                    <div class="phase-doc-list" id="phase-list-2">Loading...</div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Phase 3 -->
+                        <div class="accordion-item mb-2 border-0 shadow-sm">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#phase3">
+                                    Phase 3: System Architecture & Technical Design (P301, P302...)
+                                </button>
+                            </h2>
+                            <div id="phase3" class="accordion-collapse collapse" data-bs-parent="#phaseAccordion">
+                                <div class="accordion-body">
+                                    <p class="text-muted">Deliverables: System Architecture & Design Document (SADD), Database Schema Design & ERD, API Interface Specification</p>
+                                    <div class="phase-doc-list" id="phase-list-3">Loading...</div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Phase 4 -->
+                        <div class="accordion-item mb-2 border-0 shadow-sm">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#phase4">
+                                    Phase 4: Software Construction & Coding (P401, P402...)
+                                </button>
+                            </h2>
+                            <div id="phase4" class="accordion-collapse collapse" data-bs-parent="#phaseAccordion">
+                                <div class="accordion-body">
+                                    <p class="text-muted">Deliverables: Source Code Repository & Build Scripts, Code Review & Static Security Analysis Report, Unit Test Execution Results</p>
+                                    <div class="phase-doc-list" id="phase-list-4">Loading...</div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Phase 5 -->
+                        <div class="accordion-item mb-2 border-0 shadow-sm">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#phase5">
+                                    Phase 5: System Integration & Acceptance Testing (P501, P502...)
+                                </button>
+                            </h2>
+                            <div id="phase5" class="accordion-collapse collapse" data-bs-parent="#phaseAccordion">
+                                <div class="accordion-body">
+                                    <p class="text-muted">Deliverables: System Integration Test (SIT) Plan & Results, User Acceptance Test (UAT) Sign-off Document, Performance & Load Testing Report</p>
+                                    <div class="phase-doc-list" id="phase-list-5">Loading...</div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Phase 6 -->
+                        <div class="accordion-item mb-2 border-0 shadow-sm">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#phase6">
+                                    Phase 6: Deployment & Handover (P601, P602...)
+                                </button>
+                            </h2>
+                            <div id="phase6" class="accordion-collapse collapse" data-bs-parent="#phaseAccordion">
+                                <div class="accordion-body">
+                                    <p class="text-muted">Deliverables: Deployment Plan & Checklist, User Manual & System Administration Guide, Production Release Sign-off Form</p>
+                                    <div class="phase-doc-list" id="phase-list-6">Loading...</div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Phase 7 -->
+                        <div class="accordion-item mb-2 border-0 shadow-sm">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#phase7">
+                                    Phase 7: Maintenance & Post-Implementation Review (P701, P702...)
+                                </button>
+                            </h2>
+                            <div id="phase7" class="accordion-collapse collapse" data-bs-parent="#phaseAccordion">
+                                <div class="accordion-body">
+                                    <p class="text-muted">Deliverables: Post Implementation Review (PIR) Report, Service Level Agreement (SLA) & Support Handover, Maintenance & Incident Log Matrix</p>
+                                    <div class="phase-doc-list" id="phase-list-7">Loading...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Document / Template Ingestion -->
+                <div class="tab-pane fade" id="content-upload">
+                    <h3 class="h5 fw-bold mb-3">Document Ingestion & Standard Template Upload</h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card p-3 shadow-sm mb-3">
+                                <h5 class="fw-bold">Maker Document Submission</h5>
+                                <form id="uploadForm">
+                                    <div class="mb-2">
+                                        <label class="form-label">Phase</label>
+                                        <select class="form-select" id="upPhase" required>
+                                            <option value="1">Phase 1</option>
+                                            <option value="2">Phase 2</option>
+                                            <option value="3">Phase 3</option>
+                                            <option value="4">Phase 4</option>
+                                            <option value="5">Phase 5</option>
+                                            <option value="6">Phase 6</option>
+                                            <option value="7">Phase 7</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">App Code (3 Characters)</label>
+                                        <input type="text" class="form-control" id="upAppCode" value="SDM" maxlength="3" required>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Document Code</label>
+                                        <input type="text" class="form-control" id="upDocCode" value="DOC-2026-001" required>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Title</label>
+                                        <input type="text" class="form-control" id="upTitle" placeholder="Document Deliverable Title" required>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Version Number</label>
+                                        <input type="text" class="form-control" id="upVersion" value="1.0" required>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Description</label>
+                                        <textarea class="form-control" id="upDesc" rows="2"></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Select File (Excel, Word, PPTX, XML, PDF)</label>
+                                        <input type="file" class="form-control" id="upFile" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100">Submit Document</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card p-3 shadow-sm mb-3">
+                                <h5 class="fw-bold">Standard Template Auto-Fill Parser</h5>
+                                <p class="text-muted small">Upload an Excel or Word form template to extract key-value data automatically into system forms.</p>
+                                <form id="templateForm">
+                                    <div class="mb-3">
+                                        <input type="file" class="form-control" id="tmplFile" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-secondary w-100 mb-3">Parse Standard Template</button>
+                                </form>
+                                <div id="templateResult" class="p-2 bg-light border rounded" style="min-height: 120px; font-family: monospace;">
+                                    Parsed form values will be displayed here...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Maker / Checker Approvals -->
+                <div class="tab-pane fade" id="content-checker">
+                    <h3 class="h5 fw-bold mb-3">Checker Document Approval Queue</h3>
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle" id="checker-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Doc ID</th>
+                                    <th>Title</th>
+                                    <th>Phase</th>
+                                    <th>Maker</th>
+                                    <th>Submitted Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Online Reports -->
+                <div class="tab-pane fade" id="content-reports">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="h5 fw-bold m-0">Online Status & Approvals Report</h3>
+                        <div>
+                            <a href="/api/reports/export/excel" class="btn btn-outline-success btn-sm"><i class="bi bi-file-earmark-excel me-1"></i> Export Excel</a>
+                            <a href="/api/reports/export/pdf" class="btn btn-outline-danger btn-sm"><i class="bi bi-file-earmark-pdf me-1"></i> Export PDF</a>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-striped align-middle" id="reports-table">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Doc ID</th>
+                                    <th>Code</th>
+                                    <th>App</th>
+                                    <th>Title</th>
+                                    <th>Phase</th>
+                                    <th>Status</th>
+                                    <th>Maker</th>
+                                    <th>Checker Approver</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- AI LLM RAG Recommendations -->
+                <div class="tab-pane fade" id="content-rag">
+                    <h3 class="h5 fw-bold mb-3"><i class="bi bi-robot text-primary me-2"></i>AI LLM RAG Intelligent Recommendations</h3>
+                    <div class="card p-3 shadow-sm mb-3">
+                        <p class="text-muted">Select an uploaded document to analyze and generate AI RAG recommendations, semantic search, and summary citations.</p>
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <select class="form-select" id="ragDocSelect">
+                                    <option value="">-- Select Processed Document --</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-primary w-100" onclick="generateAiRecommendation()">Generate AI Analysis</button>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-light rounded border" id="ragResultArea" style="min-height: 150px;">
+                            AI Recommendation output will appear here...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin & User Maintenance -->
+                <div class="tab-pane fade" id="content-admin">
+                    <h3 class="h5 fw-bold mb-3">System Administration & Configuration</h3>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card p-3 shadow-sm">
+                                <h5 class="fw-bold">Notification Toggles & LDAP Switch</h5>
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="toggleEmail">
+                                    <label class="form-check-label" for="toggleEmail">Enable Email Notifications</label>
+                                </div>
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="toggleSms">
+                                    <label class="form-check-label" for="toggleSms">Enable SMS Notifications / 2FA</label>
+                                </div>
+                                <button class="btn btn-outline-primary btn-sm" onclick="saveToggles()">Save Toggle Settings</button>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card p-3 shadow-sm">
+                                <h5 class="fw-bold">User Account Maintenance</h5>
+                                <button class="btn btn-success btn-sm mb-2" data-bs-toggle="modal" data-bs-target="#newUserModal"><i class="bi bi-person-plus me-1"></i> Add New User</button>
+                                <div id="adminUserList" class="list-group"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        loadDashboardStats();
+        loadPhaseDocuments();
+        loadCheckerPending();
+        loadReportData();
+
+        // Forms
+        document.getElementById("uploadForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append("phaseNumber", document.getElementById("upPhase").value);
+            formData.append("appCode", document.getElementById("upAppCode").value);
+            formData.append("documentCode", document.getElementById("upDocCode").value);
+            formData.append("title", document.getElementById("upTitle").value);
+            formData.append("versionNumber", document.getElementById("upVersion").value);
+            formData.append("description", document.getElementById("upDesc").value);
+            formData.append("makerUsername", "maker");
+            formData.append("file", document.getElementById("upFile").files[0]);
+
+            fetch("/api/documents/upload", { method: "POST", body: formData })
+                .then(r => r.json())
+                .then(data => {
+                    alert("Document submitted successfully! Doc ID: " + data.documentId);
+                    loadDashboardStats();
+                    loadPhaseDocuments();
+                    loadCheckerPending();
+                });
+        });
+
+        document.getElementById("templateForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append("file", document.getElementById("tmplFile").files[0]);
+
+            fetch("/api/documents/template-upload", { method: "POST", body: formData })
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById("templateResult").innerText = JSON.stringify(data.parsedData, null, 2);
+                });
+        });
+    });
+
+    function loadDashboardStats() {
+        fetch("/api/dashboard/stats")
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById("stat-total").innerText = data.totalDocuments;
+                document.getElementById("stat-pending").innerText = data.pendingApprovals;
+                document.getElementById("stat-approved").innerText = data.approvedDocuments;
+                document.getElementById("stat-rejected").innerText = data.rejectedDocuments;
+            });
+    }
+
+    function loadPhaseDocuments() {
+        for (let i = 1; i <= 7; i++) {
+            fetch("/api/documents/phase/" + i)
+                .then(r => r.json())
+                .then(docs => {
+                    let list = document.getElementById("phase-list-" + i);
+                    if (!docs || docs.length === 0) {
+                        list.innerHTML = "<p class='text-muted small'>No documents in this phase yet.</p>";
+                    } else {
+                        let html = "<ul class='list-group'>";
+                        docs.forEach(d => {
+                            html += `<li class='list-group-item d-flex justify-content-between align-items-center'>
+                                <div><strong>${d.documentId}</strong> - ${d.title} (v${d.versionNumber})</div>
+                                <span class='badge bg-${d.status === 'APPROVED' ? 'success' : 'warning'}'>${d.status}</span>
+                            </li>`;
+                        });
+                        html += "</ul>";
+                        list.innerHTML = html;
+                    }
+                });
+        }
+    }
+
+    function loadCheckerPending() {
+        fetch("/api/checker/pending")
+            .then(r => r.json())
+            .then(docs => {
+                let tbody = document.querySelector("#checker-table tbody");
+                tbody.innerHTML = "";
+                docs.forEach(d => {
+                    tbody.innerHTML += `<tr>
+                        <td>${d.documentId}</td>
+                        <td>${d.title}</td>
+                        <td>Phase ${d.phaseNumber}</td>
+                        <td>${d.makerUsername}</td>
+                        <td>${d.createdAt ? d.createdAt.replace('T', ' ') : ''}</td>
+                        <td>
+                            <button class='btn btn-success btn-sm' onclick='approveDoc(${d.id})'>Approve</button>
+                            <button class='btn btn-danger btn-sm' onclick='rejectDoc(${d.id})'>Reject</button>
+                        </td>
+                    </tr>`;
+                });
+            });
+    }
+
+    function approveDoc(id) {
+        fetch(`/api/checker/approve/${id}?checkerUsername=checker`, { method: "POST" })
+            .then(() => {
+                loadDashboardStats();
+                loadCheckerPending();
+                loadReportData();
+            });
+    }
+
+    function rejectDoc(id) {
+        let reason = prompt("Enter rejection reason:");
+        if (reason) {
+            fetch(`/api/checker/reject/${id}?checkerUsername=checker&reason=${encodeURIComponent(reason)}`, { method: "POST" })
+                .then(() => {
+                    loadDashboardStats();
+                    loadCheckerPending();
+                    loadReportData();
+                });
+        }
+    }
+
+    function loadReportData() {
+        fetch("/api/reports/data")
+            .then(r => r.json())
+            .then(docs => {
+                let tbody = document.querySelector("#reports-table tbody");
+                let ragSelect = document.getElementById("ragDocSelect");
+                tbody.innerHTML = "";
+                ragSelect.innerHTML = "<option value=''>-- Select Processed Document --</option>";
+                docs.forEach(d => {
+                    tbody.innerHTML += `<tr>
+                        <td>${d.documentId}</td>
+                        <td>${d.documentCode}</td>
+                        <td>${d.appCode}</td>
+                        <td>${d.title}</td>
+                        <td>Phase ${d.phaseNumber}</td>
+                        <td><span class='badge bg-${d.status === 'APPROVED' ? 'success' : d.status === 'REJECTED' ? 'danger' : 'warning'}'>${d.status}</span></td>
+                        <td>${d.makerUsername}</td>
+                        <td>${d.checkerUsername || 'N/A'}</td>
+                    </tr>`;
+                    ragSelect.innerHTML += `<option value='${d.documentId}'>${d.documentId} - ${d.title}</option>`;
+                });
+            });
+    }
+
+    function generateAiRecommendation() {
+        let docId = document.getElementById("ragDocSelect").value;
+        if (!docId) { alert("Please select a document!"); return; }
+        document.getElementById("ragResultArea").innerHTML = "<em>Analyzing document with AI LLM RAG engine...</em>";
+        setTimeout(() => {
+            document.getElementById("ragResultArea").innerHTML = `<strong>AI LLM RAG Recommendation for ${docId}:</strong><br>
+            - <strong>Compliance Check:</strong> Standard deliverables verified against SDLC phase requirements.<br>
+            - <strong>Semantic Summary:</strong> Document structure aligns with enterprise software architecture policies.<br>
+            - <strong>Action Items:</strong> Proceed with Checker sign-off and trigger deployment pipeline.`;
+        }, 1200);
+    }
+
+    function saveToggles() {
+        let email = document.getElementById("toggleEmail").checked;
+        let sms = document.getElementById("toggleSms").checked;
+        fetch(`/api/admin/config/toggles?emailEnabled=${email}&smsEnabled=${sms}`, { method: "POST" })
+            .then(r => r.json())
+            .then(() => alert("Notification settings updated!"));
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+target/
+*.log
+*.class
+*.jar
+incoming_documents/
+processed_documents/
+uploaded_documents/
+node_modules/
+.DS_Store

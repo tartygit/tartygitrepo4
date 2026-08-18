@@ -1,0 +1,13 @@
+spring:
+  config:
+    activate:
+      on-profile: sqlserver
+  datasource:
+    url: jdbc:sqlserver://localhost:1433;databaseName=sdmdb;encrypt=false
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    username: sdm_user
+    password: sdm_password
+  jpa:
+    database-platform: org.hibernate.dialect.SQLServerDialect
+    hibernate:
+      ddl-auto: update

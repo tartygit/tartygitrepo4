@@ -1,0 +1,6 @@
+flask
+gunicorn
+faiss-cpu
+numpy
+requests
+python-dotenv

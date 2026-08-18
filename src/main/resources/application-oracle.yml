@@ -1,0 +1,13 @@
+spring:
+  config:
+    activate:
+      on-profile: oracle
+  datasource:
+    url: jdbc:oracle:thin:@localhost:1521/XEPDB1
+    driver-class-name: oracle.jdbc.OracleDriver
+    username: sdm_user
+    password: sdm_password
+  jpa:
+    database-platform: org.hibernate.dialect.OracleDialect
+    hibernate:
+      ddl-auto: update

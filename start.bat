@@ -1,0 +1,3 @@
+@echo off
+echo Starting Software Development Document Environment...
+java -jar target/software-development-document-environment-1.0.0.jar

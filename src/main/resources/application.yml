@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: Software Development Document Environment
+  profiles:
+    active: default
+  datasource:
+    url: jdbc:h2:mem:sdmdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+server:
+  port: 8080
+
+app:
+  name: Software Development Document Environment
+  application-code: SDM
+  watched-folder: ./incoming_documents
+  processed-folder: ./processed_documents
+  ldap:
+    enabled: false
+    url: ldap://localhost:389/dc=example,dc=com
+  notifications:
+    email-enabled: false
+    sms-enabled: false
+  rag:
+    url: http://localhost:5000/api

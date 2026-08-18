@@ -1,0 +1,13 @@
+spring:
+  config:
+    activate:
+      on-profile: postgres
+  datasource:
+    url: jdbc:postgresql://localhost:5432/sdmdb
+    driver-class-name: org.postgresql.Driver
+    username: sdm_user
+    password: sdm_password
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update

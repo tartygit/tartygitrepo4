@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  sdm-backend:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+      - APP_RAG_URL=http://rag-app:5000/api
+
+  rag-app:
+    build: ./rag_app
+    ports:
+      - "5000:5000"
+    environment:
+      - MODEL_CHAT=llama3.2:latest
+      - MODEL_EMBED=nomic-embed-text
